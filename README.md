@@ -1,4 +1,4 @@
-# Jetty Channels  [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Maven Central](https://img.shields.io/maven-central/v/com.adtsw/jcommons?color=blue&label=Version) ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/com.adtsw/jcommons?label=Snapshot&server=https%3A%2F%2Foss.sonatype.org%2F)
+# Jetty Channels  [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Maven Central](https://img.shields.io/maven-central/v/com.adtsw/jchannels?color=blue&label=Version) ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/com.adtsw/jchannels?label=Snapshot&server=https%3A%2F%2Foss.sonatype.org%2F)
 
 
 ***Wrapper over Jetty library for simple inter and intra process communication***
@@ -19,8 +19,8 @@ JChannels is available on [Maven Central](http://search.maven.org/#search). You 
 ```xml
 <dependency>
   <groupId>com.adtsw</groupId>
-  <artifactId>jcommons</artifactId>
-  <version>1.0.1</version>
+  <artifactId>jchannels</artifactId>
+  <version>1.0.16</version>
 </dependency>
 ```
 
@@ -35,7 +35,7 @@ The ***snapshot version*** has not been released yet.
 ```xml
 <dependency>
   <groupId>com.adtsw</groupId>
-  <artifactId>jcommons</artifactId>
+  <artifactId>jchannels</artifactId>
   <version>TBD</version>
 </dependency>
 ```
