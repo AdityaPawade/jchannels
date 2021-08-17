@@ -8,14 +8,16 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractSocket {
 
     private final CountDownLatch closeLatch;
+    private final long idleTimeoutMs;
     private Session session;
 
-    public AbstractSocket(int latchCountDown) {
+    public AbstractSocket(int latchCountDown, long idleTimeoutMs) {
         this.closeLatch = new CountDownLatch(latchCountDown);
+        this.idleTimeoutMs = idleTimeoutMs;
     }
 
     public AbstractSocket() {
-        this(0);
+        this(0, 300000);
     }
 
     public Session getSession() {
@@ -28,6 +30,7 @@ public abstract class AbstractSocket {
 
     public void setSession(Session session) {
         this.session = session;
+        this.session.setIdleTimeout(idleTimeoutMs);
     }
 
     public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {

@@ -25,6 +25,8 @@ public class Constants {
         public static final String CLEAR_MESSAGE = "$!o!CLEAR!o!$";
         
         public static final String SHUTDOWN_MESSAGE = "$!o!SHUTDOWN!o!$";
+        
+        public static final String ERROR_MESSAGE = "$!o!ERROR!o!$";
 
         public static final String REQUEST_TOPIC = "request";
         

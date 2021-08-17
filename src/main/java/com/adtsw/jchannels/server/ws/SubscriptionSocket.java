@@ -27,7 +27,7 @@ public class SubscriptionSocket extends AbstractSocket {
     public SubscriptionSocket(List<String> subscriptionTopics, 
                               MessageQueue<String> messageQueue, boolean isPayloadCompressed) {
 
-        super(1);
+        super(1, 30000);
         this.subscriptionTopics = subscriptionTopics;
         this.messageQueue = messageQueue;
         this.isPayloadCompressed = isPayloadCompressed;

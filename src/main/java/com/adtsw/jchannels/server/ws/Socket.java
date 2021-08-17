@@ -16,9 +16,11 @@ public class Socket extends AbstractSocket {
 
     private final MessageQueue<String> messageQueue;
 
-    public Socket(MessageQueue<String> messageQueue) {
-        super(1);
+    public Socket(MessageQueue<String> messageQueue, long idleTimeoutMs) {
+        super(1, idleTimeoutMs);
         this.messageQueue = messageQueue;
+        this.messageQueue.registerTopic(Constants.WS.RESPONSE_TOPIC);
+        this.messageQueue.registerTopic(Constants.WS.OPS_TOPIC);
         this.messageQueue.addListener(Constants.WS.REQUEST_TOPIC, new MessageListener<String>() {
             @Override
             public void onMessage(String message) {

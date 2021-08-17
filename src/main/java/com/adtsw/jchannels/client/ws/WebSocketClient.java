@@ -4,10 +4,12 @@ import com.adtsw.jchannels.server.ws.AbstractSocket;
 import com.adtsw.jchannels.utils.HttpUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class WebSocketClient {
@@ -15,7 +17,7 @@ public class WebSocketClient {
     private static final Logger logger = LogManager.getLogger(WebSocketClient.class);
     private Thread clientThread;
     private final String destUri;
-    private final Integer timeout;
+    private final Integer connectionTimeoutInSeconds;
     private final org.eclipse.jetty.websocket.client.WebSocketClient client;
     private final WebSocketFactory socketFactory;
     private AbstractSocket socket;
@@ -28,7 +30,7 @@ public class WebSocketClient {
 
     public WebSocketClient(String destUri, Integer timeoutInSeconds, WebSocketFactory socketFactory,
                            Map<String, String> headers, Map<String, String> cookies) {
-        this.timeout = timeoutInSeconds;
+        this.connectionTimeoutInSeconds = timeoutInSeconds;
         this.destUri = destUri;
         this.socketFactory = socketFactory;
         this.headers = headers;
@@ -92,12 +94,13 @@ public class WebSocketClient {
         headers.forEach(request::setHeader);
          
         socket = socketFactory.createSocket();
-        client.connect(socket, uri, request);
+        Future<Session> sessionFuture = client.connect(socket, uri, request);
+        
         logger.warn(String.format("Connecting to : %s%n", uri));
         // wait for closed socket connection.
 
-        if(timeout != null) {
-            socket.awaitClose(timeout, TimeUnit.SECONDS);
+        if(connectionTimeoutInSeconds != null) {
+            socket.awaitClose(connectionTimeoutInSeconds, TimeUnit.SECONDS);
         } else {
             socket.awaitClose();
         }

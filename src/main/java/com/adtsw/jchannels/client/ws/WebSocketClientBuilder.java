@@ -16,10 +16,12 @@ public class WebSocketClientBuilder {
     private static Logger logger = LogManager.getLogger(WebSocketClientBuilder.class);
     
     private String destinationUri;
-    private Integer timeoutInSeconds = null;
+    private Integer connectionTimeoutInSeconds = null;
+    private Integer idleTimeoutInSeconds = null;
     private WebSocketFactory socketFactory;
     private Map<String, String> headers;
     private Map<String, String> cookies;
+    private MessageQueue<String> messageQueue;
     
     WebSocketClientBuilder() {
     }
@@ -28,19 +30,19 @@ public class WebSocketClientBuilder {
         this.destinationUri = destinationUri;
         return this;
     }
-    
-    public WebSocketClientBuilder withTimeoutInSeconds(int timeoutInSeconds) {
-        this.timeoutInSeconds = timeoutInSeconds;
+
+    public WebSocketClientBuilder withConnectionTimeoutInSeconds(int timeoutInSeconds) {
+        this.connectionTimeoutInSeconds = timeoutInSeconds;
         return this;
     }
 
-    public WebSocketClientBuilder withSocket(MessageQueue messageQueue) {
-        this.socketFactory = new WebSocketFactory() {
-            @Override
-            public AbstractSocket createSocket() {
-                return new Socket(messageQueue);
-            }
-        };
+    public WebSocketClientBuilder withIdleTimeoutInSeconds(int timeoutInSeconds) {
+        this.idleTimeoutInSeconds = timeoutInSeconds;
+        return this;
+    }
+
+    public WebSocketClientBuilder withSocket(MessageQueue<String> messageQueue) {
+        this.messageQueue = messageQueue;
         return this;
     }
 
@@ -54,7 +56,8 @@ public class WebSocketClientBuilder {
         return this;
     }
 
-    public WebSocketClientBuilder withSubscriptionSocket(List<String> subscriptionTopics, MessageQueue messageQueue,
+    public WebSocketClientBuilder withSubscriptionSocket(List<String> subscriptionTopics, 
+                                                         MessageQueue<String> messageQueue,
                                                          boolean isPayloadCompressed) {
         this.socketFactory = new WebSocketFactory() {
             @Override
@@ -70,6 +73,14 @@ public class WebSocketClientBuilder {
         if(socketFactory == null) throw new RuntimeException("socket not defined");
         if(headers == null) headers = new HashMap<>();
         if(cookies == null) cookies = new HashMap<>();
-        return new WebSocketClient(destinationUri, timeoutInSeconds, socketFactory, headers, cookies);
+        if(connectionTimeoutInSeconds == null) connectionTimeoutInSeconds = 5;
+        if(idleTimeoutInSeconds == null) idleTimeoutInSeconds = 300000;
+        this.socketFactory = new WebSocketFactory() {
+            @Override
+            public AbstractSocket createSocket() {
+                return new Socket(messageQueue, idleTimeoutInSeconds);
+            }
+        };
+        return new WebSocketClient(destinationUri, connectionTimeoutInSeconds, socketFactory, headers, cookies);
     }
 }
