@@ -37,6 +37,11 @@ public class InMemoryMessageQueue<I> implements MessageQueue<I> {
         listeners.get(topic).add(listener);
     }
 
+    @Override
+    public void removeListener(String topic, MessageListener<I> listener) {
+        listeners.get(topic).remove(listener);
+    }
+
     public void pushMessage(String topic, I message) {
         try {
             executorService.executeButBlockIfFull(() -> {

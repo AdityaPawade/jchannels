@@ -15,17 +15,18 @@ public class Socket extends AbstractSocket {
     private static final Logger logger = LogManager.getLogger(Socket.class);
 
     private final MessageQueue<String> messageQueue;
+    private final MessageListener<String> messageListener;
 
     public Socket(MessageQueue<String> messageQueue, long idleTimeoutMs) {
         super(1, idleTimeoutMs);
         this.messageQueue = messageQueue;
         this.messageQueue.registerTopic(Constants.WS.RESPONSE_TOPIC);
         this.messageQueue.registerTopic(Constants.WS.OPS_TOPIC);
-        this.messageQueue.addListener(Constants.WS.REQUEST_TOPIC, new MessageListener<String>() {
+        this.messageListener = new MessageListener<>() {
             @Override
             public void onMessage(String message) {
                 try {
-                    if(getSession()!= null && getSession().isOpen()) {
+                    if (getSession() != null && getSession().isOpen()) {
                         getSession().getRemote().sendString(message);
                     } else {
                         logger.warn("Could not send ws message as connection was not established");
@@ -34,7 +35,8 @@ public class Socket extends AbstractSocket {
                     throw new RuntimeException("Error sending ws message " + t.getMessage(), t);
                 }
             }
-        });
+        };
+        this.messageQueue.addListener(Constants.WS.REQUEST_TOPIC, messageListener);
     }
 
     @OnWebSocketClose
@@ -42,6 +44,7 @@ public class Socket extends AbstractSocket {
         logger.warn(String.format("Connection closed: %d - %s%n", statusCode, reason));
         close();
         removeSession();
+        this.messageQueue.removeListener(Constants.WS.REQUEST_TOPIC, messageListener);
         this.countDown(); // trigger latch
     }
 
@@ -59,6 +62,7 @@ public class Socket extends AbstractSocket {
     @OnWebSocketError
     public void onError(Throwable cause) {
         logger.error("WebSocket Error : " + cause.getMessage());
+        this.messageQueue.removeListener(Constants.WS.REQUEST_TOPIC, messageListener);
         this.countDown();
     }
     

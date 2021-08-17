@@ -18,6 +18,8 @@ public class WebSocketClient {
     private Thread clientThread;
     private final String destUri;
     private final Integer connectionTimeoutInSeconds;
+    private final Integer maxConnectionRetries;
+    private final Boolean autoReconnectOnTermination;
     private final org.eclipse.jetty.websocket.client.WebSocketClient client;
     private final WebSocketFactory socketFactory;
     private AbstractSocket socket;
@@ -28,49 +30,50 @@ public class WebSocketClient {
         return new WebSocketClientBuilder();
     }
 
-    public WebSocketClient(String destUri, Integer timeoutInSeconds, WebSocketFactory socketFactory,
+    public WebSocketClient(String destUri, 
+                           Integer connectionTimeoutInSeconds, Integer maxConnectionRetries, 
+                           Boolean autoReconnectOnTermination, WebSocketFactory socketFactory,
                            Map<String, String> headers, Map<String, String> cookies) {
-        this.connectionTimeoutInSeconds = timeoutInSeconds;
+
+        this.connectionTimeoutInSeconds = connectionTimeoutInSeconds;
+        this.maxConnectionRetries = maxConnectionRetries; 
+        this.autoReconnectOnTermination = autoReconnectOnTermination;
         this.destUri = destUri;
         this.socketFactory = socketFactory;
         this.headers = headers;
         this.cookies = cookies;
         this.client = new org.eclipse.jetty.websocket.client.WebSocketClient();
     }
-
-    public void start(boolean autoReconnect) {
-        start(true, false);
+    
+    public boolean start(boolean runInBackground) {
+        startConnectionThread(runInBackground);
+        int currentRetryAttempt = 0;
+        boolean attemptingConnection = true;
+        while(attemptingConnection && !isOpen()) {
+            logger.info("Waiting for WS client to connect.... attempt " + currentRetryAttempt + " / " + maxConnectionRetries);
+            try {
+                Thread.sleep(1000);
+                currentRetryAttempt = currentRetryAttempt + 1;
+                if(currentRetryAttempt > maxConnectionRetries) {
+                    shutdown();
+                    attemptingConnection = false;
+                    logger.warn("Max connection wait time for WS client exhausted");
+                }
+            } catch (InterruptedException e) {
+                logger.warn("WS client connection thread interrupted");
+                return false;
+            }
+        }
+        return attemptingConnection;
     }
 
-    public void start(boolean runInBackground, boolean autoReconnect) {
+    private void startConnectionThread(boolean runInBackground) {
 
         if(clientThread != null) {
-
             logger.warn("Client is already running. Will not attempt connection");
         } else {
-
-            clientThread = new Thread(() -> {
-                try {
-                    connect();
-                    if(autoReconnect) {
-                        logger.warn("Attempting ws client reconnection");
-                        Thread.sleep(1000);
-                        while (true) {
-                            connect();
-                            Thread.sleep(1000);
-                        }
-                    } else {
-                        logger.warn("Ws client connection terminated");
-                    }
-                } catch (InterruptedException e) {
-                    logger.error("Thread interrupted. shutting down");
-                } catch (Exception e) {
-                    logger.error("Exception while running server", e);
-                }
-            });
-
+            clientThread = getClientConnectionThread();
             clientThread.start();
-            
             if(!runInBackground) {
                 try {
                     clientThread.join();
@@ -80,6 +83,30 @@ public class WebSocketClient {
                 }
             }
         }
+    }
+
+    private Thread getClientConnectionThread() {
+        return new Thread(() -> {
+            try {
+                connect();
+                if(autoReconnectOnTermination) {
+                    logger.warn("Checking for ws client reconnection");
+                    Thread.sleep(1000);
+                    while (true) {
+                        if(!isOpen()) {
+                            connect();
+                            Thread.sleep(connectionTimeoutInSeconds * 1000);
+                        }
+                    }
+                } else {
+                    logger.warn("WS client connection terminated");
+                }
+            } catch (InterruptedException e) {
+                logger.error("Thread interrupted. shutting down");
+            } catch (Exception e) {
+                logger.error("Exception while running server", e);
+            }
+        });
     }
 
     private void connect() throws Exception {
@@ -116,7 +143,7 @@ public class WebSocketClient {
             try {
                 client.stop();
             } catch (Exception e) {
-                logger.error("Exception while stopping client", e);
+                logger.error("Exception while stopping WS client", e);
             }
         }
     }

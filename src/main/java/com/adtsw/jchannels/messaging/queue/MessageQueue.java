@@ -6,5 +6,7 @@ public interface MessageQueue<I> {
     
     void addListener(String topic, MessageListener<I> listener);
     
+    void removeListener(String topic, MessageListener<I> listener);
+    
     void pushMessage(String topic, I message);
 }

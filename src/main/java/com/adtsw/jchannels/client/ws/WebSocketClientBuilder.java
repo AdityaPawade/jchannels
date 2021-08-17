@@ -17,6 +17,8 @@ public class WebSocketClientBuilder {
     
     private String destinationUri;
     private Integer connectionTimeoutInSeconds = null;
+    private Integer maxConnectionRetries = null;
+    private Boolean autoReconnectOnTermination = null;
     private Integer idleTimeoutInSeconds = null;
     private WebSocketFactory socketFactory;
     private Map<String, String> headers;
@@ -33,6 +35,16 @@ public class WebSocketClientBuilder {
 
     public WebSocketClientBuilder withConnectionTimeoutInSeconds(int timeoutInSeconds) {
         this.connectionTimeoutInSeconds = timeoutInSeconds;
+        return this;
+    }
+
+    public WebSocketClientBuilder withMaxConnectionRetries(int maxConnectionRetries) {
+        this.maxConnectionRetries = maxConnectionRetries;
+        return this;
+    }
+
+    public WebSocketClientBuilder withAutoReconnectOnTermination(boolean autoReconnectOnTermination) {
+        this.autoReconnectOnTermination = autoReconnectOnTermination;
         return this;
     }
 
@@ -70,17 +82,23 @@ public class WebSocketClientBuilder {
     
     public WebSocketClient build() {
         if(destinationUri == null) throw new RuntimeException("destinationUri not defined");
-        if(socketFactory == null) throw new RuntimeException("socket not defined");
+        if(messageQueue == null) throw new RuntimeException("message queue not defined");
         if(headers == null) headers = new HashMap<>();
         if(cookies == null) cookies = new HashMap<>();
         if(connectionTimeoutInSeconds == null) connectionTimeoutInSeconds = 5;
-        if(idleTimeoutInSeconds == null) idleTimeoutInSeconds = 300000;
+        if(maxConnectionRetries == null) maxConnectionRetries = 10;
+        if(autoReconnectOnTermination == null) autoReconnectOnTermination = false;
+        if(idleTimeoutInSeconds == null) idleTimeoutInSeconds = 300;
         this.socketFactory = new WebSocketFactory() {
             @Override
             public AbstractSocket createSocket() {
-                return new Socket(messageQueue, idleTimeoutInSeconds);
+                return new Socket(messageQueue, idleTimeoutInSeconds * 1000);
             }
         };
-        return new WebSocketClient(destinationUri, connectionTimeoutInSeconds, socketFactory, headers, cookies);
+        return new WebSocketClient(
+            destinationUri, connectionTimeoutInSeconds,
+            maxConnectionRetries, autoReconnectOnTermination,
+            socketFactory, headers, cookies
+        );
     }
 }
