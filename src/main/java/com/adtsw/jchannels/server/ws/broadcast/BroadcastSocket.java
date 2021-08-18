@@ -29,7 +29,7 @@ public class BroadcastSocket extends AbstractSocket {
             subscribedTopics.forEach(topic -> broadcaster.removeSubscription(topic, getSession()));
             getSession().close(StatusCode.NORMAL, "closing session");
             broadcaster.closeSubscription();
-            setSession(null);
+            removeSession();
         }
     }
 
