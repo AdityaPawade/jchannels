@@ -8,5 +8,9 @@ public interface MessageQueue<I> {
     
     void removeListener(String topic, MessageListener<I> listener);
     
-    void pushMessage(String topic, I message);
+    boolean pushMessage(String topic, I message);
+    
+    boolean pushMessage(String topic, I message, int partition);
+
+    MessageQueueStats getStats();
 }
