@@ -27,7 +27,7 @@ public class InMemoryMessageQueue<I> implements MessageQueue<I> {
         this.executors = new HashMap<>();
         for (int i = 0; i < numPartitions; i++) {
             this.executors.put(i, new BlockingThreadPoolExecutor(
-                queueName, threadPoolSizePerPartition, threadPoolSizePerPartition)
+                queueName + "-" + i, threadPoolSizePerPartition, threadPoolSizePerPartition)
             );
         }
         this.queueName = queueName;
