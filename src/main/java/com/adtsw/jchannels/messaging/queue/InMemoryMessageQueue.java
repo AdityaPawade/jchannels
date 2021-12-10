@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class InMemoryMessageQueue<I> implements MessageQueue<I> {
 
@@ -19,9 +20,16 @@ public class InMemoryMessageQueue<I> implements MessageQueue<I> {
     private final String queueName;
     private final int numPartitions;
     private final QueueFullAction queueFullAction;
+    private final long timeout;
+    private final TimeUnit unit;
 
     public InMemoryMessageQueue(String queueName, int numPartitions, int threadPoolSizePerPartition,
                                 QueueFullAction queueFullAction) {
+        this(queueName, numPartitions, threadPoolSizePerPartition, queueFullAction, 1, TimeUnit.SECONDS);
+    }
+
+    public InMemoryMessageQueue(String queueName, int numPartitions, int threadPoolSizePerPartition,
+                                QueueFullAction queueFullAction, long timeout, TimeUnit unit) {
 
         this.queueFullAction = queueFullAction;
         this.executors = new HashMap<>();
@@ -32,6 +40,8 @@ public class InMemoryMessageQueue<I> implements MessageQueue<I> {
         }
         this.queueName = queueName;
         this.numPartitions = numPartitions;
+        this.timeout = timeout;
+        this.unit = unit;
     }
 
     public InMemoryMessageQueue(String queueName, QueueFullAction queueFullAction) {
@@ -78,9 +88,15 @@ public class InMemoryMessageQueue<I> implements MessageQueue<I> {
                         pushMessageToListeners(topic, message);
                     });
                     break;
+                case BLOCK_WITH_TIMEOUT:
+                    success = executors.get(partition).executeButBlockWithTimeoutIfFull(() -> {
+                        pushMessageToListeners(topic, message);
+                    }, timeout, unit);
+                    break;
             }
         } catch (InterruptedException e) {
             logger.warn(queueName + " - Push message task interrupted " + e.getMessage());
+            throw new RuntimeException(e);
         }
         return success;
     }
