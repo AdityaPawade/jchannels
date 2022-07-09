@@ -10,7 +10,7 @@
 
     <groupId>com.adtsw</groupId>
     <artifactId>jchannels</artifactId>
-    <version>1.0.24</version>
+    <version>1.0.25</version>
 
     <url>github.com/AdityaPawade/jchannels</url>
     <scm>
@@ -43,7 +43,7 @@
         <jackson.version>2.5.4</jackson.version>
         <jetty.version>9.4.45.v20220203</jetty.version>
         <jjwt.version>0.11.2</jjwt.version>
-        <jcommons.version>1.0.16</jcommons.version>
+        <jcommons.version>1.0.18</jcommons.version>
     </properties>
 
     <repositories>
@@ -77,11 +77,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.22</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
