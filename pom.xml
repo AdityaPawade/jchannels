@@ -10,7 +10,7 @@
 
     <groupId>com.adtsw</groupId>
     <artifactId>jchannels</artifactId>
-    <version>1.0.28</version>
+    <version>1.0.29</version>
 
     <url>github.com/AdityaPawade/jchannels</url>
     <scm>
@@ -43,7 +43,7 @@
         <jackson.version>2.5.4</jackson.version>
         <jetty.version>9.4.45.v20220203</jetty.version>
         <jjwt.version>0.11.2</jjwt.version>
-        <jcommons.version>1.0.26</jcommons.version>
+        <jcommons.version>1.0.28</jcommons.version>
     </properties>
 
     <repositories>

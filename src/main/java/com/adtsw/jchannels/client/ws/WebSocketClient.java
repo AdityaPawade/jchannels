@@ -106,7 +106,7 @@ public class WebSocketClient {
             } catch (Exception e) {
                 logger.error("Exception while running server", e);
             }
-        });
+        }, "web-socket-client-connection-thread");
     }
 
     private void connect() throws Exception {

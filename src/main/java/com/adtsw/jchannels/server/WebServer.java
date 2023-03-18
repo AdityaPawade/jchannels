@@ -49,7 +49,7 @@ public class WebServer {
                 } catch (Exception e) {
                     logger.error("Exception while running server", e);
                 }
-            });
+            }, "web-server-thread");
             serverThread.start();
             
             if(!runInBackground) {

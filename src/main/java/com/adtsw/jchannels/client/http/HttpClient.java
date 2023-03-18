@@ -115,7 +115,8 @@ public class HttpClient implements IHttpClient {
             return new HttpResponse(content, responseHeaders, responseCookies);
 
         } catch (HttpException e) {
-            logger.error("Exception in getting HTTP response : [ " + e.getStatusCode() + " ], " + e.getReason());
+            logger.error("Exception in getting HTTP " + request.getURI().toString() + 
+                " \nresponse : [ " + e.getStatusCode() + " ], \n" + e.getReason());
             return new HttpResponse(e);
         } catch (Exception e) {
             logger.error("Exception in HTTP request", e);
