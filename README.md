@@ -21,7 +21,7 @@ JChannels is available on [Maven Central](http://search.maven.org/#search). You 
 <dependency>
   <groupId>com.adtsw</groupId>
   <artifactId>jchannels</artifactId>
-  <version>1.0.29</version>
+  <version>1.0.30</version>
 </dependency>
 ```
 

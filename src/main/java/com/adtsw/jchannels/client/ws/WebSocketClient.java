@@ -94,7 +94,11 @@ public class WebSocketClient {
                     Thread.sleep(1000);
                     while (true) {
                         if(!isOpen()) {
+                            logger.warn("WS client connection is not open. Reconnecting");
                             connect();
+                            Thread.sleep(connectionTimeoutInSeconds * 1000);
+                        } else {
+                            logger.info("WS client connection is still open");
                             Thread.sleep(connectionTimeoutInSeconds * 1000);
                         }
                     }
